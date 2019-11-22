@@ -12,10 +12,10 @@ from parlai.agents.bert_ranker.helpers import (
     get_bert_optimizer,
     MODEL_PATH,
 )
-from parlai.utils.misc import load_opt_file
+from parlai.core.utils import load_opt_file
 from parlai.core.torch_agent import History
 from parlai.core.torch_classifier_agent import TorchClassifierAgent
-from parlai.utils.misc import warn_once
+from parlai.core.utils import warn_once
 from parlai.zoo.bert.build import download
 
 from collections import deque
@@ -67,6 +67,8 @@ class BertClassifierAgent(TorchClassifierAgent):
         opt['pretrained_path'] = self.pretrained_path
         self.add_cls_token = opt.get('add_cls_token', True)
         self.sep_last_utt = opt.get('sep_last_utt', False)
+        self.add_bottleneck_layer = opt.get('add_bottleneck_layer', False)
+        self.bottleneck_layer_dim = opt.get('bottleneck_layer_dim', 0)
         super().__init__(opt, shared)
 
     @classmethod
@@ -107,16 +109,16 @@ class BertClassifierAgent(TorchClassifierAgent):
             'segment with [SEP] token in between',
         )
         parser.add_argument(
-            '--embeddings-path',
-            type=str,
-            default=None,
-            help='Path to save embeddings to',
+            '--add-bottleneck-layer',
+            type='bool',
+            default=False,
+            help='add a bottleneck layer',
         )
         parser.add_argument(
-            '--bottleneck-linear-layer-dim',
+            '--bottleneck-layer-dim',
             type=int,
-            default=None,
-            help='Dimension of optional bottleneck linear layer (default=None)',
+            default=0,
+            help='bottleneck layer dimension',
         )
         parser.set_defaults(dict_maxexs=0)  # skip building dictionary
 
@@ -141,12 +143,7 @@ class BertClassifierAgent(TorchClassifierAgent):
     def build_model(self):
         """Construct the model."""
         num_classes = len(self.class_list)
-        return BertWrapper(
-            BertModel.from_pretrained(self.pretrained_path),
-            num_classes,
-            embeddings_path=self.opt.get('embeddings_path'),
-            bottleneck_linear_layer_dim=self.opt.get('bottleneck_linear_layer_dim'),
-        )
+        return BertWrapper(BertModel.from_pretrained(self.pretrained_path), num_classes, add_bottleneck_layer=self.add_bottleneck_layer, bottleneck_layer_dim=self.bottleneck_layer_dim)
 
     def init_optim(self, params, optim_states=None, saved_optim_type=None):
         """Initialize the optimizer."""

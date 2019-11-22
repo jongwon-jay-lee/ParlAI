@@ -7,7 +7,7 @@
 """BERT helpers."""
 
 from parlai.core.torch_ranker_agent import TorchRankerAgent
-from parlai.utils.misc import neginf, fp16_optimizer_wrapper
+from parlai.core.utils import neginf, fp16_optimizer_wrapper
 
 try:
     from pytorch_pretrained_bert.modeling import BertLayer, BertConfig
@@ -83,6 +83,12 @@ def add_common_args(parser):
         choices=['first', 'max', 'mean'],
         help='How do we transform a list of output into one',
     )
+    parser.add_argument(
+        '--bottleneck-dim',
+        type=int,
+        default=0,
+        help='dimension for bottleneck layer',
+    )
     parser.set_defaults(
         label_truncate=300,
         text_truncate=300,
@@ -100,9 +106,9 @@ class BertWrapper(torch.nn.Module):
         self,
         bert_model,
         output_dim,
-        embeddings_path=None,
         add_transformer_layer=False,
-        bottleneck_linear_layer_dim=None,
+        add_bottleneck_layer=False,
+        bottleneck_layer_dim=0,
         layer_pulled=-1,
         aggregation="first",
     ):
@@ -110,7 +116,8 @@ class BertWrapper(torch.nn.Module):
         self.layer_pulled = layer_pulled
         self.aggregation = aggregation
         self.add_transformer_layer = add_transformer_layer
-        self.bottleneck_dim = bottleneck_linear_layer_dim
+        self.add_bottleneck_layer = add_bottleneck_layer
+        self.bottleneck_layer_dim = bottleneck_layer_dim
         # deduce bert output dim from the size of embeddings
         bert_output_dim = bert_model.embeddings.word_embeddings.weight.size(1)
 
@@ -123,20 +130,15 @@ class BertWrapper(torch.nn.Module):
                 hidden_act='gelu',
             )
             self.additional_transformer_layer = BertLayer(config_for_one_layer)
-        if self.bottleneck_dim is not None:
-            self.additional_linear_layer = torch.nn.Linear(
-                bert_output_dim, self.bottleneck_dim
-            )
-            self.bottleneck_linear_layer = torch.nn.Linear(
-                self.bottleneck_dim, output_dim
-            )
+        #print("bottleneck dim is:", bottleneck_dim)
+        if add_bottleneck_layer:
+            print("we're using bottleneck layer with dimension of ", bottleneck_layer_dim)
+            self.bottleneck_linear_layer = torch.nn.Linear(bert_output_dim, bottleneck_layer_dim)
+            self.additional_linear_layer = torch.nn.Linear(bottleneck_layer_dim, output_dim)
         else:
+            print("we're not using bottleneck layer")
             self.additional_linear_layer = torch.nn.Linear(bert_output_dim, output_dim)
         self.bert_model = bert_model
-        if embeddings_path is not None:
-            self.f_embeddings = open(embeddings_path, 'w')
-        else:
-            self.f_embeddings = None
 
     def forward(self, token_ids, segment_ids, attention_mask):
         """Forward pass."""
@@ -176,13 +178,10 @@ class BertWrapper(torch.nn.Module):
             embeddings = embedding_layer[:, 0, :]
 
         # We need this in case of dimensionality reduction
-        result = self.additional_linear_layer(embeddings)
-        if self.f_embeddings is not None:
-            for r in result.detach().cpu().numpy():
-                embedding_string = ' '.join([str(val) for val in r.tolist()])
-                self.f_embeddings.write(embedding_string + '\n')
-        if self.bottleneck_dim is not None:
-            result = self.bottleneck_linear_layer(result)
+        if self.add_bottleneck_layer:
+            result = self.additional_linear_layer(self.bottleneck_linear_layer(embeddings))
+        else:
+            result = self.additional_linear_layer(embeddings)
 
         # Sort of hack to make it work with distributed: this way the pooler layer
         # is used for grad computation, even though it does not change anything...
