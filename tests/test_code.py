@@ -26,7 +26,9 @@ COPYRIGHT = [
 
 
 class TestCopyright(unittest.TestCase):
-    """Make sure all files have the right copyright."""
+    """
+    Make sure all files have the right copyright.
+    """
 
     def test_copyright(self):
         for fn in testing_utils.git_ls_files():
@@ -54,7 +56,9 @@ class TestCopyright(unittest.TestCase):
 
 
 class TestInit(unittest.TestCase):
-    """Make sure all python packages have init files."""
+    """
+    Make sure all python packages have init files.
+    """
 
     def test_init_everywhere(self):
         for folder in testing_utils.git_ls_dirs('parlai'):
