@@ -5,7 +5,8 @@
 # LICENSE file in the root directory of this source tree.
 
 """
-ParlAI has limited support for using models from `Fairseq
+ParlAI has limited support for using models from `Fairseq.
+
 <https://github.com/pytorch/fairseq>`_. Fairseq often supports more experimental seq2seq
 architectures with fast fp16 training.
 

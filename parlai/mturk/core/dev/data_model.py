@@ -8,9 +8,9 @@
 Commands to communicate between the agent manager and individual clients. The following
 describes the intended behavoir of each command.
 
-COMMAND_SEND_MESSAGE ...... / MTurk web client is expected to send new message
-\\ to the server. Allow the user to send a message COMMAND_SUBMIT_HIT ........ / MTurk
-web client should submit the HIT directly
+COMMAND_SEND_MESSAGE ...... / MTurk web client is expected to send new message \\ to the
+server. Allow the user to send a message COMMAND_SUBMIT_HIT ........ / MTurk web client
+should submit the HIT directly
 """
 COMMAND_SEND_MESSAGE = 'COMMAND_SEND_MESSAGE'
 COMMAND_SUBMIT_HIT = 'COMMAND_SUBMIT_HIT'

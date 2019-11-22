@@ -335,9 +335,9 @@ def lastutt_sim_arora_word(dict, hypothesis, history, wt, feat):
     """
     Weighted decoding feature function.
 
-    See explanation above. Given a word w, this feature is equal to
-    cos_sim(word_emb(w), sent_emb(l)) the cosine similarity between the GloVe vector for
-    word w, and the Arora-style sentence embedding for the partner's last utterance l.
+    See explanation above. Given a word w, this feature is equal to cos_sim(word_emb(w),
+    sent_emb(l)) the cosine similarity between the GloVe vector for word w, and the
+    Arora-style sentence embedding for the partner's last utterance l.
     """
     partner_utts = history.partner_utts
     if len(partner_utts) == 0:  # if bot goes first then do nothing

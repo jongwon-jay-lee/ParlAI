@@ -38,8 +38,8 @@ class SelfFeedingTeacher(ParlAIDialogTeacher):
     """
     Teacher for the SelfFeedingAgent.
 
-    opt['datatype'] determines whether we use the designated filepath ('train') or
-    one of the eval files ('valid', 'test'), which are identical regardless of     what
+    opt['datatype'] determines whether we use the designated filepath ('train') or one
+    of the eval files ('valid', 'test'), which are identical regardless of     what
     training set is being used.
     """
 

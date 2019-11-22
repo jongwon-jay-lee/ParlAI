@@ -1243,10 +1243,10 @@ def _create_task_agents(opt):
     """
     Create task agent(s) for the given task name.
 
-    It does this by calling the create_agent function in agents.py of the given task.
-    If create_agents function does not exist, it just looks for the teacher (agent)
-    class defined by the task name directly.  (This saves the task creator bothering to
-    define the create_agents function when it is not needed.)
+    It does this by calling the create_agent function in agents.py of the given task. If
+    create_agents function does not exist, it just looks for the teacher (agent) class
+    defined by the task name directly.  (This saves the task creator bothering to define
+    the create_agents function when it is not needed.)
     """
     sp = opt['task'].strip()
     repo = 'parlai'
