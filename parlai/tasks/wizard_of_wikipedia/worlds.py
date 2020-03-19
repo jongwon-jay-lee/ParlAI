@@ -131,7 +131,11 @@ class InteractiveWorld(DialogPartnerWorld):
         Adds knowledge to the wizard observations. Assumes that the model agent is the
         wizard model.
         """
-
+        for attr, value in self.__dict__.items():
+            if str(attr) is "topic_list":
+                continue
+            print(attr, value)
+            
         if self.cnt == 0:
             self.topic = self._get_new_topic()
             self.acts = [None, None]
